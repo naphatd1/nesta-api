@@ -1,19 +1,20 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { PostsModule } from './posts/posts.module';
-import { HealthModule } from './health/health.module';
-import { SecurityMiddleware } from './common/middleware/security.middleware';
-import { SecurityLoggingInterceptor } from './common/interceptors/security-logging.interceptor';
-import { ErrorResponseInterceptor } from './common/interceptors/error-response.interceptor';
-import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
-import { ValidationExceptionFilter } from './common/filters/validation-exception.filter';
-import { ErrorLoggingService } from './common/services/error-logging.service';
+import { Module, MiddlewareConsumer, NestModule } from "@nestjs/common";
+import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from "@nestjs/core";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { PrismaModule } from "./prisma/prisma.module";
+import { AuthModule } from "./auth/auth.module";
+import { UsersModule } from "./users/users.module";
+import { PostsModule } from "./posts/posts.module";
+import { HealthModule } from "./health/health.module";
+import { UploadModule } from "./upload/upload.module";
+import { SecurityMiddleware } from "./common/middleware/security.middleware";
+import { SecurityLoggingInterceptor } from "./common/interceptors/security-logging.interceptor";
+import { ErrorResponseInterceptor } from "./common/interceptors/error-response.interceptor";
+import { GlobalExceptionFilter } from "./common/filters/global-exception.filter";
+import { ValidationExceptionFilter } from "./common/filters/validation-exception.filter";
+import { ErrorLoggingService } from "./common/services/error-logging.service";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ErrorLoggingService } from './common/services/error-logging.service';
     UsersModule,
     PostsModule,
     HealthModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [
@@ -58,6 +60,6 @@ import { ErrorLoggingService } from './common/services/error-logging.service';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SecurityMiddleware).forRoutes('*');
+    consumer.apply(SecurityMiddleware).forRoutes("*");
   }
 }

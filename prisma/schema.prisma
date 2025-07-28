@@ -24,6 +24,7 @@ model User {
   updatedAt    DateTime @updatedAt
 
   posts Post[]
+  files File[]
 
   @@map("users")
 }
@@ -38,6 +39,56 @@ model Post {
   updatedAt DateTime @updatedAt
 
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  files  File[]
 
   @@map("posts")
+}
+
+enum FileType {
+  IMAGE
+  DOCUMENT
+  VIDEO
+  AUDIO
+  OTHER
+}
+
+enum FileStatus {
+  UPLOADING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model File {
+  id           String     @id @default(cuid())
+  originalName String
+  filename     String     @unique
+  mimetype     String
+  size         Int
+  type         FileType
+  status       FileStatus @default(UPLOADING)
+  path         String
+  url          String?
+  thumbnail    String?
+  metadata     Json?
+  uploadedById String
+  postId       String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  uploadedBy User  @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  post       Post? @relation(fields: [postId], references: [id], onDelete: SetNull)
+
+  @@map("files")
+}
+
+model FileChunk {
+  id         String   @id @default(cuid())
+  fileId     String
+  chunkIndex Int
+  data       Bytes
+  createdAt  DateTime @default(now())
+
+  @@unique([fileId, chunkIndex])
+  @@map("file_chunks")
 }

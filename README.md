@@ -72,6 +72,35 @@ The API will be available at `http://localhost:4000/api`
 - `GET /api/health/detailed` - Detailed system status
 - `GET /api/health/errors` - Error statistics
 
+### File Upload (Protected)
+
+#### Image Upload
+- `POST /api/upload/images/single` - Upload single image
+- `POST /api/upload/images/multiple` - Upload multiple images
+- `GET /api/upload/images/my-images` - Get user's images
+- `GET /api/upload/images/post/:postId` - Get images by post
+- `DELETE /api/upload/images/:fileId` - Delete image
+
+#### Document Upload
+- `POST /api/upload/documents/single` - Upload single document
+- `POST /api/upload/documents/multiple` - Upload multiple documents
+- `GET /api/upload/documents/my-documents` - Get user's documents
+- `GET /api/upload/documents/post/:postId` - Get documents by post
+- `DELETE /api/upload/documents/:fileId` - Delete document
+
+#### Chunk Upload (Large Files)
+- `POST /api/upload/chunk/initiate` - Initiate chunk upload
+- `POST /api/upload/chunk/upload` - Upload file chunk
+- `POST /api/upload/chunk/complete` - Complete chunk upload
+- `GET /api/upload/chunk/progress/:fileId` - Get upload progress
+- `DELETE /api/upload/chunk/cancel/:fileId` - Cancel upload
+
+#### File Serving
+- `GET /api/files/serve/:path` - Serve static files
+- `GET /api/files/download/:fileId` - Download file
+- `GET /api/files/info/:fileId` - Get file information
+- `GET /api/files/list` - List user's files
+
 ## Example Usage
 
 ### Register User
