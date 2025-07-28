@@ -13,12 +13,21 @@ A complete NestJS API with authentication, authorization, and CRUD operations.
 
 ## Quick Start
 
+### Prerequisites
+
+- Node.js 18+ (recommended: Node.js 20+)
+- PostgreSQL 13+ or compatible database
+- npm or yarn
+- Docker (optional, for containerized deployment)
+
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Setup Database
+
 ```bash
 # Update .env with your PostgreSQL connection string
 DATABASE_URL="postgresql://username:password@localhost:5432/nestauth"
@@ -34,6 +43,7 @@ npx prisma db seed
 ```
 
 ### 3. Start Development Server
+
 ```bash
 npm run start:dev
 ```
@@ -43,6 +53,7 @@ The API will be available at `http://localhost:4000/api`
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 - `POST /api/auth/refresh` - Refresh access token
@@ -51,6 +62,7 @@ The API will be available at `http://localhost:4000/api`
 - `POST /api/auth/create-admin` - Create admin user (Admin only)
 
 ### Users (Protected)
+
 - `GET /api/users` - Get all users (Admin only)
 - `GET /api/users/:id` - Get user by ID
 - `POST /api/users` - Create user (Admin only)
@@ -60,6 +72,7 @@ The API will be available at `http://localhost:4000/api`
 - `PATCH /api/users/:id/deactivate` - Deactivate user (Admin only)
 
 ### Posts (Protected)
+
 - `GET /api/posts` - Get all posts
 - `GET /api/posts/my-posts` - Get current user's posts
 - `GET /api/posts/:id` - Get post by ID
@@ -68,6 +81,7 @@ The API will be available at `http://localhost:4000/api`
 - `DELETE /api/posts/:id` - Delete post
 
 ### Health & Monitoring
+
 - `GET /api/health` - Basic health check
 - `GET /api/health/detailed` - Detailed system status
 - `GET /api/health/errors` - Error statistics
@@ -75,6 +89,7 @@ The API will be available at `http://localhost:4000/api`
 ### File Upload (Protected)
 
 #### Image Upload
+
 - `POST /api/upload/images/single` - Upload single image
 - `POST /api/upload/images/multiple` - Upload multiple images
 - `GET /api/upload/images/my-images` - Get user's images
@@ -82,6 +97,7 @@ The API will be available at `http://localhost:4000/api`
 - `DELETE /api/upload/images/:fileId` - Delete image
 
 #### Document Upload
+
 - `POST /api/upload/documents/single` - Upload single document
 - `POST /api/upload/documents/multiple` - Upload multiple documents
 - `GET /api/upload/documents/my-documents` - Get user's documents
@@ -89,6 +105,7 @@ The API will be available at `http://localhost:4000/api`
 - `DELETE /api/upload/documents/:fileId` - Delete document
 
 #### Chunk Upload (Large Files)
+
 - `POST /api/upload/chunk/initiate` - Initiate chunk upload
 - `POST /api/upload/chunk/upload` - Upload file chunk
 - `POST /api/upload/chunk/complete` - Complete chunk upload
@@ -96,6 +113,7 @@ The API will be available at `http://localhost:4000/api`
 - `DELETE /api/upload/chunk/cancel/:fileId` - Cancel upload
 
 #### File Serving
+
 - `GET /api/files/serve/images/:filename` - Serve image files
 - `GET /api/files/serve/documents/:filename` - Serve document files
 - `GET /api/files/serve/videos/:filename` - Serve video files
@@ -108,6 +126,7 @@ The API will be available at `http://localhost:4000/api`
 ## Example Usage
 
 ### Register User
+
 ```bash
 curl -X POST http://localhost:4000/api/auth/register \
   -H "Content-Type: application/json" \
@@ -119,6 +138,7 @@ curl -X POST http://localhost:4000/api/auth/register \
 ```
 
 ### Login
+
 ```bash
 curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -129,6 +149,7 @@ curl -X POST http://localhost:4000/api/auth/login \
 ```
 
 ### Refresh Token
+
 ```bash
 curl -X POST http://localhost:4000/api/auth/refresh \
   -H "Content-Type: application/json" \
@@ -138,6 +159,7 @@ curl -X POST http://localhost:4000/api/auth/refresh \
 ```
 
 ### Create Post (with JWT token)
+
 ```bash
 curl -X POST http://localhost:4000/api/posts \
   -H "Content-Type: application/json" \
@@ -148,6 +170,20 @@ curl -X POST http://localhost:4000/api/posts \
     "published": true
   }'
 ```
+
+## Security Features
+
+## Tech Stack
+
+- **Framework**: NestJS 11.1.5
+- **Language**: TypeScript 5.8.3
+- **Database**: PostgreSQL with Prisma ORM 6.12.0
+- **Authentication**: JWT 11.0.0 with Passport 0.7.0
+- **Password Hashing**: Argon2 0.43.1 for secure password storage
+- **File Upload**: Multer 2.0.2 with Sharp 0.34.3 for image processing
+- **Security**: Helmet 8.1.0, Rate limiting, CORS protection
+- **Validation**: Class-validator 0.14.2 and Class-transformer 0.5.1
+- **Testing**: Jest 30.0.5 with Supertest 7.1.4
 
 ## Security Features
 
@@ -162,17 +198,24 @@ curl -X POST http://localhost:4000/api/posts \
 ## Environment Variables
 
 ```env
+# Database
 DATABASE_URL="postgresql://username:password@localhost:5432/nestauth"
-JWT_SECRET="your-super-secret-jwt-key"
+
+# JWT Configuration
+JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 JWT_ACCESS_TOKEN_EXPIRES_IN="15m"
 JWT_REFRESH_TOKEN_SECRET="your-super-secret-refresh-token-key"
 JWT_REFRESH_TOKEN_EXPIRES_IN="7d"
+
+# Server Configuration
 PORT=4000
+NODE_ENV=development
 ```
 
 ## Development
 
 ### Local Development
+
 ```bash
 # Development
 npm run start:dev
@@ -191,6 +234,7 @@ npm run test:e2e
 ### Docker Development
 
 #### Quick Start (Development)
+
 ```bash
 # Start development environment
 npm run docker:dev
@@ -200,6 +244,7 @@ npm run docker:dev:down
 ```
 
 #### Production Deployment
+
 ```bash
 # Start production environment
 npm run docker:prod
@@ -209,6 +254,7 @@ npm run docker:prod:down
 ```
 
 #### Manual Docker Commands
+
 ```bash
 # Build Docker image
 npm run docker:build
@@ -227,6 +273,7 @@ docker-compose exec app sh
 ```
 
 ### Docker Services
+
 - **API**: http://localhost:4000/api (production) or http://localhost:4001/api (development)
 - **PostgreSQL**: localhost:5432 (production) or localhost:5433 (development)
 - **Redis**: localhost:6379 (production) or localhost:6380 (development)
