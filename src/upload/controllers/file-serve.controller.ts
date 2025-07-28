@@ -3,11 +3,12 @@ import {
   Get,
   Param,
   Res,
+  Req,
   UseGuards,
   StreamableFile,
   Header,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -19,13 +20,53 @@ import * as mime from 'mime-types';
 export class FileServeController {
   constructor(private readonly prisma: PrismaService) {}
 
-  @Get('serve/:path(*)')
-  async serveFile(
-    @Param('path') filePath: string,
+  @Get('serve/images/:filename')
+  async serveImage(
+    @Param('filename') filename: string,
     @Res({ passthrough: true }) res: Response,
   ) {
+    return this.serveFileByType('images', filename, res);
+  }
+
+  @Get('serve/documents/:filename')
+  async serveDocument(
+    @Param('filename') filename: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.serveFileByType('documents', filename, res);
+  }
+
+  @Get('serve/videos/:filename')
+  async serveVideo(
+    @Param('filename') filename: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.serveFileByType('videos', filename, res);
+  }
+
+  @Get('serve/audio/:filename')
+  async serveAudio(
+    @Param('filename') filename: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.serveFileByType('audio', filename, res);
+  }
+
+  @Get('serve/thumbnails/:filename')
+  async serveThumbnail(
+    @Param('filename') filename: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.serveFileByType('thumbnails', filename, res);
+  }
+
+  private async serveFileByType(
+    folder: string,
+    filename: string,
+    res: Response,
+  ) {
     try {
-      const fullPath = path.join('uploads', filePath);
+      const fullPath = path.join('uploads', folder, filename);
       
       // Check if file exists
       if (!fs.existsSync(fullPath)) {

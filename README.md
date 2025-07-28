@@ -96,7 +96,11 @@ The API will be available at `http://localhost:4000/api`
 - `DELETE /api/upload/chunk/cancel/:fileId` - Cancel upload
 
 #### File Serving
-- `GET /api/files/serve/:path` - Serve static files
+- `GET /api/files/serve/images/:filename` - Serve image files
+- `GET /api/files/serve/documents/:filename` - Serve document files
+- `GET /api/files/serve/videos/:filename` - Serve video files
+- `GET /api/files/serve/audio/:filename` - Serve audio files
+- `GET /api/files/serve/thumbnails/:filename` - Serve thumbnail files
 - `GET /api/files/download/:fileId` - Download file
 - `GET /api/files/info/:fileId` - Get file information
 - `GET /api/files/list` - List user's files

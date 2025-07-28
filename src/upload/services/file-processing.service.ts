@@ -109,8 +109,13 @@ export class FileProcessingService {
 
   private generatePublicUrl(filePath: string): string {
     // Convert file path to public URL
-    const relativePath = filePath.replace(/^uploads\//, '');
-    return `/api/files/serve/${relativePath}`;
+    const pathParts = filePath.replace(/^uploads\//, '').split('/');
+    if (pathParts.length >= 2) {
+      const folder = pathParts[0];
+      const filename = pathParts[1];
+      return `/api/files/serve/${folder}/${filename}`;
+    }
+    return `/api/files/serve/temp/${path.basename(filePath)}`;
   }
 
   async getFileMetadata(filePath: string, mimetype: string): Promise<any> {
