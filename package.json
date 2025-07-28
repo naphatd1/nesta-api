@@ -16,7 +16,14 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "docker:build": "chmod +x scripts/docker-build.sh && ./scripts/docker-build.sh",
+    "docker:dev": "chmod +x scripts/docker-dev.sh && ./scripts/docker-dev.sh",
+    "docker:prod": "chmod +x scripts/docker-prod.sh && ./scripts/docker-prod.sh",
+    "docker:dev:up": "docker-compose -f docker-compose.dev.yml up -d",
+    "docker:dev:down": "docker-compose -f docker-compose.dev.yml down",
+    "docker:prod:up": "docker-compose up -d",
+    "docker:prod:down": "docker-compose down"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.10",

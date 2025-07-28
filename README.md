@@ -67,6 +67,11 @@ The API will be available at `http://localhost:4000/api`
 - `PATCH /api/posts/:id` - Update post
 - `DELETE /api/posts/:id` - Delete post
 
+### Health & Monitoring
+- `GET /api/health` - Basic health check
+- `GET /api/health/detailed` - Detailed system status
+- `GET /api/health/errors` - Error statistics
+
 ## Example Usage
 
 ### Register User
@@ -134,6 +139,7 @@ PORT=4000
 
 ## Development
 
+### Local Development
 ```bash
 # Development
 npm run start:dev
@@ -148,3 +154,47 @@ npm run start:prod
 npm run test
 npm run test:e2e
 ```
+
+### Docker Development
+
+#### Quick Start (Development)
+```bash
+# Start development environment
+npm run docker:dev
+
+# Stop development environment
+npm run docker:dev:down
+```
+
+#### Production Deployment
+```bash
+# Start production environment
+npm run docker:prod
+
+# Stop production environment
+npm run docker:prod:down
+```
+
+#### Manual Docker Commands
+```bash
+# Build Docker image
+npm run docker:build
+
+# Development with hot reload
+docker-compose -f docker-compose.dev.yml up --build
+
+# Production deployment
+docker-compose up --build -d
+
+# View logs
+docker-compose logs -f app
+
+# Access container shell
+docker-compose exec app sh
+```
+
+### Docker Services
+- **API**: http://localhost:4000/api (production) or http://localhost:4001/api (development)
+- **PostgreSQL**: localhost:5432 (production) or localhost:5433 (development)
+- **Redis**: localhost:6379 (production) or localhost:6380 (development)
+- **Nginx**: http://localhost (production only)

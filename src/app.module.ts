@@ -1,14 +1,19 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
+import { HealthModule } from './health/health.module';
 import { SecurityMiddleware } from './common/middleware/security.middleware';
 import { SecurityLoggingInterceptor } from './common/interceptors/security-logging.interceptor';
+import { ErrorResponseInterceptor } from './common/interceptors/error-response.interceptor';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { ValidationExceptionFilter } from './common/filters/validation-exception.filter';
+import { ErrorLoggingService } from './common/services/error-logging.service';
 
 @Module({
   imports: [
@@ -23,17 +28,31 @@ import { SecurityLoggingInterceptor } from './common/interceptors/security-loggi
     AuthModule,
     UsersModule,
     PostsModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    ErrorLoggingService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
     {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: ValidationExceptionFilter,
+    },
+    {
       provide: APP_INTERCEPTOR,
       useClass: SecurityLoggingInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ErrorResponseInterceptor,
     },
   ],
 })
