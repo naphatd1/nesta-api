@@ -35,15 +35,31 @@ export class ImageUploadController {
     @Body() uploadDto: UploadFileDto,
     @CurrentUser() user: any,
   ) {
-    if (!file) {
-      throw new Error('No file provided');
-    }
+    try {
+      if (!file) {
+        throw new Error('No file provided');
+      }
 
-    return this.imageUploadService.uploadImage(
-      file,
-      user.id,
-      uploadDto.postId,
-    );
+      console.log('Upload request:', {
+        filename: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        userId: user.id,
+        postId: uploadDto?.postId
+      });
+
+      const result = await this.imageUploadService.uploadImage(
+        file,
+        user.id,
+        uploadDto?.postId,
+      );
+
+      console.log('Upload successful:', result);
+      return result;
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
   }
 
   @Post('multiple')

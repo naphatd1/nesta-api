@@ -83,7 +83,12 @@ export class ImageUploadService {
       };
     } catch (error) {
       this.logger.error('Failed to upload image:', error);
-      throw new BadRequestException('Failed to upload image');
+      console.error('Detailed upload error:', {
+        message: error.message,
+        stack: error.stack,
+        code: error.code
+      });
+      throw new BadRequestException(`Failed to upload image: ${error.message}`);
     }
   }
 
