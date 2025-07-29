@@ -67,7 +67,12 @@ docker-compose down
 
 # Start services
 print_status "Starting services..."
-docker-compose up -d
+if [ -f "docker-compose.external-db.yml" ]; then
+    print_status "Using external database configuration..."
+    docker-compose -f docker-compose.external-db.yml up -d
+else
+    docker-compose up -d
+fi
 
 # Wait for services to be ready
 print_status "Waiting for services to be ready..."
@@ -75,18 +80,30 @@ sleep 30
 
 # Run database migrations
 print_status "Running database migrations..."
-docker-compose exec -T app npx prisma migrate deploy
+if [ -f "docker-compose.external-db.yml" ]; then
+    docker-compose -f docker-compose.external-db.yml exec -T app npx prisma migrate deploy
+else
+    docker-compose exec -T app npx prisma migrate deploy
+fi
 
 # Generate Prisma client
 print_status "Generating Prisma client..."
-docker-compose exec -T app npx prisma generate
+if [ -f "docker-compose.external-db.yml" ]; then
+    docker-compose -f docker-compose.external-db.yml exec -T app npx prisma generate
+else
+    docker-compose exec -T app npx prisma generate
+fi
 
 # Seed database (optional)
 read -p "Do you want to seed the database? (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     print_status "Seeding database..."
-    docker-compose exec -T app npx prisma db seed
+    if [ -f "docker-compose.external-db.yml" ]; then
+        docker-compose -f docker-compose.external-db.yml exec -T app npx prisma db seed
+    else
+        docker-compose exec -T app npx prisma db seed
+    fi
 fi
 
 # Check service health

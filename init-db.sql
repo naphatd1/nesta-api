@@ -1,15 +1,24 @@
--- Initialize database with extensions and basic setup
+-- Initialize database for NestJS application
+-- This script runs when PostgreSQL container starts for the first time
+
+-- Create database if not exists (already created by POSTGRES_DB env var)
+-- CREATE DATABASE IF NOT EXISTS nestdb;
+
+-- Connect to the database
+\c nestdb;
+
+-- Create extensions if needed
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Create database if not exists (this might not work in all PostgreSQL versions)
--- SELECT 'CREATE DATABASE nestauth' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'nestauth')\gexec
+-- Grant privileges to user
+GRANT ALL PRIVILEGES ON DATABASE nestdb TO naphat;
+GRANT ALL ON SCHEMA public TO naphat;
 
--- Set timezone
-SET timezone = 'UTC';
+-- Set default privileges for future tables
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO naphat;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO naphat;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO naphat;
 
--- Create indexes for better performance (these will be created by Prisma migrations)
--- But you can add custom indexes here if needed
-
--- Example: Create a custom index for email lookups
--- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_email_active ON users(email) WHERE "isActive" = true;
+-- Display success message
+SELECT 'Database nestdb initialized successfully!' as message;
