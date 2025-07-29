@@ -114,7 +114,7 @@ sleep 10
 if docker-compose ps | grep -q "Up"; then
     print_status "✅ Deployment successful!"
     print_status "Application is running on port 4000"
-    print_status "Database is running on port 5432"
+    print_status "Database is running on port 5434"
     print_status "Redis is running on port 6379"
     
     echo ""
