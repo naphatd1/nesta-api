@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { FileType, FileStatus } from '@prisma/client';
 import { UPLOAD_CONFIG, getFileTypeFromMimetype } from '../config/upload.config';
 import { FileProcessingService } from './file-processing.service';
+import { SupabaseStorageService } from './supabase-storage.service';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +15,7 @@ export class ImageUploadService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileProcessingService: FileProcessingService,
+    private readonly supabaseStorage: SupabaseStorageService,
   ) {}
 
   async uploadImage(
@@ -41,19 +43,76 @@ export class ImageUploadService {
       const fileExtension = path.extname(file.originalname);
       const uniqueFilename = `${uuidv4()}${fileExtension}`;
       
-      // Ensure upload directory exists
-      const uploadDir = UPLOAD_CONFIG.UPLOAD_PATHS.IMAGE;
-      await this.ensureDirectoryExists(uploadDir);
-      
-      // Save file to disk
-      const filePath = path.join(uploadDir, uniqueFilename);
-      await fs.writeFile(filePath, file.buffer);
+      let filePath: string;
+      let fileUrl: string;
+      let metadata: any = {};
 
-      // Get file metadata
-      const metadata = await this.fileProcessingService.getFileMetadata(
-        filePath,
-        file.mimetype,
-      );
+      // Try Supabase Storage first, fallback to local storage
+      let useSupabase = false;
+      
+      if (this.supabaseStorage.isEnabled()) {
+        try {
+          // Upload to Supabase Storage
+          const bucketName = 'uploads';
+          const supabasePath = `images/${uniqueFilename}`;
+          
+          // Try to ensure bucket exists (ignore errors)
+          try {
+            await this.supabaseStorage.createBucket(bucketName);
+          } catch (error) {
+            this.logger.warn('Bucket creation failed, assuming it exists:', error.message);
+          }
+          
+          // Upload file
+          const uploadResult = await this.supabaseStorage.uploadFile(
+            bucketName,
+            supabasePath,
+            file.buffer,
+            {
+              contentType: file.mimetype,
+              cacheControl: '3600',
+            }
+          );
+          
+          filePath = uploadResult.path;
+          fileUrl = uploadResult.url;
+          useSupabase = true;
+          
+          // Get basic metadata
+          metadata = {
+            size: file.size,
+            mimetype: file.mimetype,
+            storage: 'supabase',
+            bucket: bucketName,
+          };
+          
+          this.logger.log(`✅ File uploaded to Supabase: ${fileUrl}`);
+        } catch (error) {
+          this.logger.error(`❌ Supabase upload failed: ${error.message}`);
+          this.logger.log('🔄 Falling back to local storage...');
+          useSupabase = false;
+        }
+      }
+      
+      if (!useSupabase) {
+        // Fallback to local storage
+        const uploadDir = UPLOAD_CONFIG.UPLOAD_PATHS.IMAGE;
+        await this.ensureDirectoryExists(uploadDir);
+        
+        filePath = path.join(uploadDir, uniqueFilename);
+        await fs.writeFile(filePath, file.buffer);
+        
+        fileUrl = `/api/files/serve/images/${uniqueFilename}`;
+        
+        // Get file metadata
+        metadata = await this.fileProcessingService.getFileMetadata(
+          filePath,
+          file.mimetype,
+        );
+        
+        metadata.storage = 'local';
+        this.logger.log(`💾 File uploaded locally: ${filePath}`);
+      }
 
       // Save file record to database
       const fileRecord = await this.prisma.file.create({
@@ -63,18 +122,21 @@ export class ImageUploadService {
           mimetype: file.mimetype,
           size: file.size,
           type: FileType.IMAGE,
-          status: FileStatus.UPLOADING,
+          status: FileStatus.COMPLETED, // Set to completed for Supabase uploads
           path: filePath,
+          url: fileUrl,
           metadata,
           uploadedById: userId,
-          postId: postId || null, // Explicitly set to null if not provided
+          postId: postId || null,
         },
       });
 
-      // Process file asynchronously
-      this.fileProcessingService.processFile(fileRecord.id).catch((error) => {
-        this.logger.error('Failed to process image:', error);
-      });
+      // Process file asynchronously (only for local storage)
+      if (!this.supabaseStorage.isEnabled()) {
+        this.fileProcessingService.processFile(fileRecord.id).catch((error) => {
+          this.logger.error('Failed to process image:', error);
+        });
+      }
 
       return {
         id: fileRecord.id,
@@ -84,6 +146,7 @@ export class ImageUploadService {
         size: fileRecord.size,
         type: fileRecord.type,
         status: fileRecord.status,
+        url: fileRecord.url,
         createdAt: fileRecord.createdAt,
       };
     } catch (error) {

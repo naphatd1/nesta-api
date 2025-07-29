@@ -1,4 +1,5 @@
 import { Module, MiddlewareConsumer, NestModule } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from "@nestjs/core";
 import { AppController } from "./app.controller";
@@ -18,6 +19,10 @@ import { ErrorLoggingService } from "./common/services/error-logging.service";
 
 @Module({
   imports: [
+    // Configuration
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     // Rate limiting
     ThrottlerModule.forRoot([
       {

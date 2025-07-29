@@ -9,6 +9,7 @@ import { ImageUploadService } from './services/image-upload.service';
 import { DocumentUploadService } from './services/document-upload.service';
 import { ChunkUploadService } from './services/chunk-upload.service';
 import { FileProcessingService } from './services/file-processing.service';
+import { SupabaseStorageService } from './services/supabase-storage.service';
 import { UPLOAD_CONFIG } from './config/upload.config';
 import { memoryStorage } from 'multer';
 
@@ -49,12 +50,14 @@ import { memoryStorage } from 'multer';
     DocumentUploadService,
     ChunkUploadService,
     FileProcessingService,
+    SupabaseStorageService,
   ],
   exports: [
     ImageUploadService,
     DocumentUploadService,
     ChunkUploadService,
     FileProcessingService,
+    SupabaseStorageService,
   ],
 })
 export class UploadModule {}
