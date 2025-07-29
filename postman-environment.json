@@ -1,0 +1,55 @@
+{
+  "id": "nest-auth-api-env",
+  "name": "NestJS Auth API Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000/api",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "post_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "file_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "filename",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "upload_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

@@ -1,10 +1,53 @@
 {
   "info": {
     "name": "NestJS Auth API Collection",
-    "description": "Complete API collection for NestJS Authentication API with file upload system",
-    "version": "1.0.0",
+    "description": "Complete API collection for NestJS Authentication API with file upload system, monitoring, and analytics",
+    "version": "2.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh token if expired",
+          "const accessToken = pm.collectionVariables.get('access_token');",
+          "const refreshToken = pm.collectionVariables.get('refresh_token');",
+          "",
+          "if (!accessToken && refreshToken) {",
+          "    console.log('🔄 Access token missing, attempting refresh...');",
+          "    // You can implement auto-refresh logic here",
+          "}",
+          "",
+          "// Set timestamp for request tracking",
+          "pm.collectionVariables.set('request_timestamp', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for all requests",
+          "pm.test('Status code is not 500', function () {",
+          "    pm.expect(pm.response.code).to.not.equal(500);",
+          "});",
+          "",
+          "// Log request details for debugging",
+          "if (pm.response.code >= 400) {",
+          "    console.log('❌ Request failed:', {",
+          "        method: pm.request.method,",
+          "        url: pm.request.url.toString(),",
+          "        status: pm.response.code,",
+          "        response: pm.response.json()",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
   "auth": {
     "type": "bearer",
     "bearer": [
@@ -43,6 +86,16 @@
     },
     {
       "key": "file_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "filename",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "upload_id",
       "value": "",
       "type": "string"
     }
@@ -94,13 +147,28 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "if (pm.response.code === 200) {",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
                   "    const response = pm.response.json();",
-                  "    pm.collectionVariables.set('access_token', response.access_token);",
-                  "    pm.collectionVariables.set('refresh_token', response.refresh_token);",
+                  "    pm.collectionVariables.set('access_token', response.accessToken || response.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', response.refreshToken || response.refresh_token);",
                   "    pm.collectionVariables.set('user_id', response.user.id);",
-                  "}"
-                ]
+                  "    pm.test('Login successful', function () {",
+                  "        pm.expect(response.accessToken || response.access_token).to.be.a('string');",
+                  "    });",
+                  "    console.log('✅ Login successful, tokens saved');",
+                  "} else {",
+                  "    pm.test('Login failed', function () {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([400, 401, 422]);",
+                  "    });",
+                  "    console.log('❌ Login failed:', pm.response.json());",
+                  "}",
+                  "",
+                  "// Test response time",
+                  "pm.test('Response time is less than 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
             }
           ],
@@ -1138,11 +1206,185 @@
               "path": ["files", "list"]
             }
           }
+        },
+        {
+          "name": "Stream File",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/files/serve/images/{{filename}}",
+              "host": ["{{base_url}}"],
+              "path": ["files", "serve", "images", "{{filename}}"]
+            }
+          }
         }
       ]
     },
     {
-      "name": "Health & Monitoring",
+      "name": "Monitoring & Analytics",
+      "item": [
+        {
+          "name": "System Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "dashboard"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "System Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/system",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "system"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Database Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/database",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "database"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Storage Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/storage",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "storage"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/api?hours=24",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "api"],
+              "query": [
+                {
+                  "key": "hours",
+                  "value": "24",
+                  "description": "Time period in hours (default: 24)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Performance Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/performance?period=1h",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "performance"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "1h",
+                  "description": "Time period (1h, 6h, 24h, 7d)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Active Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/alerts",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "alerts"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "System Health Check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/health",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health & Status",
       "item": [
         {
           "name": "Basic Health Check",

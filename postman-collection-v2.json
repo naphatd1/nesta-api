@@ -1,0 +1,789 @@
+{
+  "info": {
+    "name": "NestJS Auth API Collection v2",
+    "description": "Complete API collection for NestJS Authentication API with file upload system, monitoring, and analytics",
+    "version": "2.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh token if expired",
+          "const accessToken = pm.collectionVariables.get('access_token');",
+          "const refreshToken = pm.collectionVariables.get('refresh_token');",
+          "",
+          "if (!accessToken && refreshToken) {",
+          "    console.log('🔄 Access token missing, attempting refresh...');",
+          "}",
+          "",
+          "// Set timestamp for request tracking",
+          "pm.collectionVariables.set('request_timestamp', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for all requests",
+          "pm.test('Status code is not 500', function () {",
+          "    pm.expect(pm.response.code).to.not.equal(500);",
+          "});",
+          "",
+          "// Log request details for debugging",
+          "if (pm.response.code >= 400) {",
+          "    console.log('❌ Request failed:', {",
+          "        method: pm.request.method,",
+          "        url: pm.request.url.toString(),",
+          "        status: pm.response.code,",
+          "        response: pm.response.json()",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "file_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "filename",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "upload_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('user_id', response.user.id);",
+                  "    pm.test('Registration successful', function () {",
+                  "        pm.expect(response.user.email).to.be.a('string');",
+                  "        pm.expect(response.user.id).to.be.a('string');",
+                  "    });",
+                  "    console.log('✅ User registered successfully:', response.user.email);",
+                  "} else {",
+                  "    pm.test('Registration failed', function () {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]);",
+                  "    });",
+                  "    console.log('❌ Registration failed:', pm.response.json());",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \"email\": \"test@example.com\",\\n  \"password\": \"password123\",\\n  \"name\": \"Test User\"\\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.accessToken || response.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', response.refreshToken || response.refresh_token);",
+                  "    pm.collectionVariables.set('user_id', response.user.id);",
+                  "    pm.test('Login successful', function () {",
+                  "        pm.expect(response.accessToken || response.access_token).to.be.a('string');",
+                  "    });",
+                  "    console.log('✅ Login successful, tokens saved');",
+                  "} else {",
+                  "    pm.test('Login failed', function () {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([400, 401, 422]);",
+                  "    });",
+                  "    console.log('❌ Login failed:', pm.response.json());",
+                  "}",
+                  "",
+                  "pm.test('Response time is less than 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \"email\": \"test@example.com\",\\n  \"password\": \"password123\"\\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.accessToken);",
+                  "    pm.test('Token refresh successful', function () {",
+                  "        pm.expect(response.accessToken).to.be.a('string');",
+                  "    });",
+                  "    console.log('✅ Token refreshed successfully');",
+                  "} else {",
+                  "    console.log('❌ Token refresh failed:', pm.response.json());",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \"refreshToken\": \"{{refresh_token}}\"\\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.test('Profile retrieved successfully', function () {",
+                  "        pm.expect(response.id).to.be.a('string');",
+                  "        pm.expect(response.email).to.be.a('string');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('Profile retrieval failed', function () {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📁 File Upload - Images",
+      "item": [
+        {
+          "name": "Upload Single Image",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('file_id', response.id);",
+                  "    pm.collectionVariables.set('filename', response.filename);",
+                  "    pm.test('Upload successful', function () {",
+                  "        pm.expect(response.id).to.be.a('string');",
+                  "        pm.expect(response.filename).to.be.a('string');",
+                  "        pm.expect(response.url).to.be.a('string');",
+                  "    });",
+                  "    console.log('✅ File uploaded successfully:', response.filename);",
+                  "} else {",
+                  "    pm.test('Upload failed', function () {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([400, 401, 413, 422]);",
+                  "    });",
+                  "    console.log('❌ Upload failed:', pm.response.json());",
+                  "}",
+                  "",
+                  "pm.test('Response time is reasonable for file upload', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select an image file to upload"
+                },
+                {
+                  "key": "postId",
+                  "value": "{{post_id}}",
+                  "type": "text",
+                  "description": "Optional: Associate with a post",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/images/single",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "images", "single"]
+            }
+          }
+        },
+        {
+          "name": "Upload Multiple Images",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select multiple image files"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/upload/images/multiple",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "images", "multiple"]
+            }
+          }
+        },
+        {
+          "name": "Get My Images",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/upload/images/my-images",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "images", "my-images"]
+            }
+          }
+        },
+        {
+          "name": "Delete Image",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/upload/images/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["upload", "images", "{{file_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 File Management",
+      "item": [
+        {
+          "name": "Get My Files",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/my-files?type=IMAGE&status=COMPLETED&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["files", "my-files"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "IMAGE",
+                  "description": "Filter by file type (IMAGE, DOCUMENT, VIDEO, AUDIO, OTHER)"
+                },
+                {
+                  "key": "status",
+                  "value": "COMPLETED",
+                  "description": "Filter by status (UPLOADING, PROCESSING, COMPLETED, FAILED)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Files (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/all-files?type=IMAGE&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["files", "all-files"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "IMAGE",
+                  "description": "Filter by file type"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get File Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/stats",
+              "host": ["{{base_url}}"],
+              "path": ["files", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get File Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/{{file_id}}/details",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{file_id}}", "details"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📈 Monitoring & Analytics",
+      "item": [
+        {
+          "name": "System Dashboard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.test('Dashboard data is complete', function () {",
+                  "        pm.expect(response.system).to.be.an('object');",
+                  "        pm.expect(response.database).to.be.an('object');",
+                  "        pm.expect(response.storage).to.be.an('object');",
+                  "        pm.expect(response.api).to.be.an('object');",
+                  "    });",
+                  "    console.log('📊 System Status:', response.status);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "System Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.test('Health check passed', function () {",
+                  "        pm.expect(response.healthy).to.be.a('boolean');",
+                  "    });",
+                  "    if (response.healthy) {",
+                  "        console.log('✅ System is healthy');",
+                  "    } else {",
+                  "        console.log('⚠️ System has issues:', response.services);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/health",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "health"]
+            }
+          }
+        },
+        {
+          "name": "System Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/system",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "system"]
+            }
+          }
+        },
+        {
+          "name": "Database Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/database",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "database"]
+            }
+          }
+        },
+        {
+          "name": "Storage Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/storage",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "storage"]
+            }
+          }
+        },
+        {
+          "name": "API Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/api?hours=24",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "api"],
+              "query": [
+                {
+                  "key": "hours",
+                  "value": "24",
+                  "description": "Time period in hours (default: 24)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Performance Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/performance?period=1h",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "performance"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "1h",
+                  "description": "Time period (1h, 6h, 24h, 7d)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Active Alerts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.test('Alerts retrieved', function () {",
+                  "        pm.expect(response.alerts).to.be.an('array');",
+                  "        pm.expect(response.count).to.be.a('number');",
+                  "    });",
+                  "    if (response.count > 0) {",
+                  "        console.log('⚠️ Active alerts:', response.count);",
+                  "    } else {",
+                  "        console.log('✅ No active alerts');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/monitoring/alerts",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "alerts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Health & Status",
+      "item": [
+        {
+          "name": "Basic Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "App Info",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

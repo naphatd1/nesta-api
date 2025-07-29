@@ -10,12 +10,14 @@ import { UsersModule } from "./users/users.module";
 import { PostsModule } from "./posts/posts.module";
 import { HealthModule } from "./health/health.module";
 import { UploadModule } from "./upload/upload.module";
+import { MonitoringModule } from "./monitoring/monitoring.module";
 import { SecurityMiddleware } from "./common/middleware/security.middleware";
 import { SecurityLoggingInterceptor } from "./common/interceptors/security-logging.interceptor";
 import { ErrorResponseInterceptor } from "./common/interceptors/error-response.interceptor";
 import { GlobalExceptionFilter } from "./common/filters/global-exception.filter";
 import { ValidationExceptionFilter } from "./common/filters/validation-exception.filter";
 import { ErrorLoggingService } from "./common/services/error-logging.service";
+import { MetricsInterceptor } from "./monitoring/interceptors/metrics.interceptor";
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { ErrorLoggingService } from "./common/services/error-logging.service";
     PostsModule,
     HealthModule,
     UploadModule,
+    MonitoringModule,
   ],
   controllers: [AppController],
   providers: [
@@ -60,6 +63,10 @@ import { ErrorLoggingService } from "./common/services/error-logging.service";
     {
       provide: APP_INTERCEPTOR,
       useClass: ErrorResponseInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
     },
   ],
 })

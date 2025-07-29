@@ -1,280 +1,443 @@
-# NestJS Authentication API
+# NestJS Authentication & File Upload API
 
-A complete NestJS API with authentication, authorization, and CRUD operations.
+A comprehensive NestJS API with authentication, authorization, file upload system, and monitoring tools.
 
-## Features
+## 🚀 Features
 
-- 🔐 **Authentication**: Register, Login, Logout with JWT
-- 👥 **User Management**: User and Admin roles
-- 📝 **Posts System**: CRUD operations with ownership
-- 🛡️ **Security**: Argon2 password hashing, Rate limiting, Helmet
-- 🔒 **Authorization**: Role-based access control
-- 📊 **Database**: PostgreSQL with Prisma ORM
+### 🔐 Authentication & Authorization
+- JWT-based authentication with refresh tokens
+- Role-based access control (USER, ADMIN)
+- Secure password hashing with Argon2
+- Rate limiting and security middleware
 
-## Quick Start
+### 📁 File Upload System
+- Multi-format file support (Images, Documents, Videos, Audio)
+- Hybrid storage: Supabase Storage + Local fallback
+- Image processing with thumbnails
+- Chunk upload for large files
+- File metadata and analytics
 
-### Prerequisites
+### 📊 Monitoring & Analytics
+- Real-time system metrics
+- API performance monitoring
+- Database statistics
+- Storage analytics
+- Health checks and alerting
 
-- Node.js 18+ (recommended: Node.js 20+)
-- PostgreSQL 13+ or compatible database
+### 🗄️ Database
+- PostgreSQL with Prisma ORM
+- Database migrations and seeding
+- Optimized queries and relationships
+
+## 🛠️ Tech Stack
+
+- **Framework**: NestJS (Node.js)
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: JWT + Passport
+- **File Storage**: Supabase Storage / Local Storage
+- **Image Processing**: Sharp
+- **Security**: Helmet, Rate Limiting, CORS
+- **Validation**: Class Validator
+- **Documentation**: Postman Collection
+
+## 📋 Prerequisites
+
+- Node.js 20+
+- PostgreSQL 15+
 - npm or yarn
-- Docker (optional, for containerized deployment)
+- Docker (optional)
 
-### 1. Install Dependencies
+## 🚀 Quick Start
 
+### 1. Clone Repository
+```bash
+git clone <repository-url>
+cd nest-auth-api
+```
+
+### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Setup Database
-
+### 3. Environment Setup
 ```bash
-# Update .env with your PostgreSQL connection string
-DATABASE_URL="postgresql://username:password@localhost:5432/nestauth"
+cp .env.example .env
+```
 
+Edit `.env` with your configuration:
+```env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/database"
+
+# JWT Secrets
+JWT_SECRET="your-super-secret-jwt-key"
+JWT_REFRESH_TOKEN_SECRET="your-refresh-token-secret"
+
+# Application
+PORT=4000
+NODE_ENV=development
+
+# Supabase (Optional - for cloud storage)
+SUPABASE_URL="your-supabase-url"
+SUPABASE_ANON_KEY="your-supabase-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+```
+
+### 4. Database Setup
+```bash
 # Generate Prisma client
 npx prisma generate
 
-# Push schema to database
-npx prisma db push
+# Run migrations
+npx prisma migrate deploy
 
-# (Optional) Seed database
+# Seed database (optional)
 npx prisma db seed
 ```
 
-### 3. Start Development Server
-
-```bash
-npm run start:dev
-```
-
-The API will be available at `http://localhost:4000/api`
-
-## API Endpoints
-
-### Authentication
-
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/refresh` - Refresh access token
-- `GET /api/auth/profile` - Get current user profile
-- `POST /api/auth/logout` - Logout user (invalidates refresh token)
-- `POST /api/auth/create-admin` - Create admin user (Admin only)
-
-### Users (Protected)
-
-- `GET /api/users` - Get all users (Admin only)
-- `GET /api/users/:id` - Get user by ID
-- `POST /api/users` - Create user (Admin only)
-- `PATCH /api/users/:id` - Update user
-- `DELETE /api/users/:id` - Delete user (Admin only)
-- `PATCH /api/users/:id/activate` - Activate user (Admin only)
-- `PATCH /api/users/:id/deactivate` - Deactivate user (Admin only)
-
-### Posts (Protected)
-
-- `GET /api/posts` - Get all posts
-- `GET /api/posts/my-posts` - Get current user's posts
-- `GET /api/posts/:id` - Get post by ID
-- `POST /api/posts` - Create post
-- `PATCH /api/posts/:id` - Update post
-- `DELETE /api/posts/:id` - Delete post
-
-### Health & Monitoring
-
-- `GET /api/health` - Basic health check
-- `GET /api/health/detailed` - Detailed system status
-- `GET /api/health/errors` - Error statistics
-
-### File Upload (Protected)
-
-#### Image Upload
-
-- `POST /api/upload/images/single` - Upload single image
-- `POST /api/upload/images/multiple` - Upload multiple images
-- `GET /api/upload/images/my-images` - Get user's images
-- `GET /api/upload/images/post/:postId` - Get images by post
-- `DELETE /api/upload/images/:fileId` - Delete image
-
-#### Document Upload
-
-- `POST /api/upload/documents/single` - Upload single document
-- `POST /api/upload/documents/multiple` - Upload multiple documents
-- `GET /api/upload/documents/my-documents` - Get user's documents
-- `GET /api/upload/documents/post/:postId` - Get documents by post
-- `DELETE /api/upload/documents/:fileId` - Delete document
-
-#### Chunk Upload (Large Files)
-
-- `POST /api/upload/chunk/initiate` - Initiate chunk upload
-- `POST /api/upload/chunk/upload` - Upload file chunk
-- `POST /api/upload/chunk/complete` - Complete chunk upload
-- `GET /api/upload/chunk/progress/:fileId` - Get upload progress
-- `DELETE /api/upload/chunk/cancel/:fileId` - Cancel upload
-
-#### File Serving
-
-- `GET /api/files/serve/images/:filename` - Serve image files
-- `GET /api/files/serve/documents/:filename` - Serve document files
-- `GET /api/files/serve/videos/:filename` - Serve video files
-- `GET /api/files/serve/audio/:filename` - Serve audio files
-- `GET /api/files/serve/thumbnails/:filename` - Serve thumbnail files
-- `GET /api/files/download/:fileId` - Download file
-- `GET /api/files/info/:fileId` - Get file information
-- `GET /api/files/list` - List user's files
-
-## Example Usage
-
-### Register User
-
-```bash
-curl -X POST http://localhost:4000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123",
-    "name": "John Doe"
-  }'
-```
-
-### Login
-
-```bash
-curl -X POST http://localhost:4000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
-```
-
-### Refresh Token
-
-```bash
-curl -X POST http://localhost:4000/api/auth/refresh \
-  -H "Content-Type: application/json" \
-  -d '{
-    "refresh_token": "YOUR_REFRESH_TOKEN"
-  }'
-```
-
-### Create Post (with JWT token)
-
-```bash
-curl -X POST http://localhost:4000/api/posts \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "title": "My First Post",
-    "content": "This is the content of my post",
-    "published": true
-  }'
-```
-
-## Security Features
-
-## Tech Stack
-
-- **Framework**: NestJS 11.1.5
-- **Language**: TypeScript 5.8.3
-- **Database**: PostgreSQL with Prisma ORM 6.12.0
-- **Authentication**: JWT 11.0.0 with Passport 0.7.0
-- **Password Hashing**: Argon2 0.43.1 for secure password storage
-- **File Upload**: Multer 2.0.2 with Sharp 0.34.3 for image processing
-- **Security**: Helmet 8.1.0, Rate limiting, CORS protection
-- **Validation**: Class-validator 0.14.2 and Class-transformer 0.5.1
-- **Testing**: Jest 30.0.5 with Supertest 7.1.4
-
-## Security Features
-
-- **Password Hashing**: Argon2 for secure password storage
-- **JWT Authentication**: Stateless authentication with configurable expiration
-- **Rate Limiting**: Prevents brute force attacks
-- **CORS**: Configurable cross-origin resource sharing
-- **Helmet**: Security headers protection
-- **Input Validation**: Automatic request validation with class-validator
-- **Role-based Access**: USER and ADMIN roles with different permissions
-
-## Environment Variables
-
-```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/nestauth"
-
-# JWT Configuration
-JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
-JWT_ACCESS_TOKEN_EXPIRES_IN="15m"
-JWT_REFRESH_TOKEN_SECRET="your-super-secret-refresh-token-key"
-JWT_REFRESH_TOKEN_EXPIRES_IN="7d"
-
-# Server Configuration
-PORT=4000
-NODE_ENV=development
-```
-
-## Development
-
-### Local Development
-
+### 5. Start Application
 ```bash
 # Development
 npm run start:dev
 
-# Build
-npm run build
-
 # Production
+npm run build
 npm run start:prod
+```
 
-# Tests
+## 🐳 Docker Deployment
+
+### Development
+```bash
+npm run docker:dev:up
+```
+
+### Production
+```bash
+npm run docker:prod:up
+```
+
+### Ubuntu Server Deployment
+```bash
+# Install Docker
+./install-docker.sh
+
+# Deploy application
+./deploy.sh
+```
+
+## 📚 API Documentation
+
+### Authentication Endpoints
+
+#### Register
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "name": "John Doe"
+}
+```
+
+#### Login
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+#### Refresh Token
+```http
+POST /api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your-refresh-token"
+}
+```
+
+### File Upload Endpoints
+
+#### Upload Single Image
+```http
+POST /api/upload/images/single
+Authorization: Bearer <jwt-token>
+Content-Type: multipart/form-data
+
+image: <file>
+postId: <optional-post-id>
+```
+
+#### Upload Multiple Images
+```http
+POST /api/upload/images/multiple
+Authorization: Bearer <jwt-token>
+Content-Type: multipart/form-data
+
+images: <files>
+postId: <optional-post-id>
+```
+
+#### Get My Images
+```http
+GET /api/upload/images/my-images
+Authorization: Bearer <jwt-token>
+```
+
+### File Management Endpoints
+
+#### Get My Files
+```http
+GET /api/files/my-files?type=IMAGE&status=COMPLETED&page=1&limit=10
+Authorization: Bearer <jwt-token>
+```
+
+#### Get File Statistics
+```http
+GET /api/files/stats
+Authorization: Bearer <jwt-token>
+```
+
+#### Get File Details
+```http
+GET /api/files/{fileId}/details
+Authorization: Bearer <jwt-token>
+```
+
+### Monitoring Endpoints
+
+#### System Dashboard
+```http
+GET /api/monitoring/dashboard
+Authorization: Bearer <jwt-token>
+```
+
+#### Health Check
+```http
+GET /api/monitoring/health
+Authorization: Bearer <jwt-token>
+```
+
+#### System Metrics
+```http
+GET /api/monitoring/system
+Authorization: Bearer <jwt-token>
+```
+
+#### API Performance
+```http
+GET /api/monitoring/performance?period=1h
+Authorization: Bearer <jwt-token>
+```
+
+## 🗂️ Project Structure
+
+```
+src/
+├── auth/                 # Authentication module
+│   ├── controllers/      # Auth controllers
+│   ├── services/         # Auth services
+│   ├── guards/          # JWT guards
+│   ├── strategies/      # Passport strategies
+│   └── decorators/      # Custom decorators
+├── users/               # User management
+├── posts/               # Post management
+├── upload/              # File upload system
+│   ├── controllers/     # Upload controllers
+│   ├── services/        # Upload services
+│   ├── config/         # Upload configuration
+│   └── dto/            # Data transfer objects
+├── monitoring/          # Monitoring system
+│   ├── controllers/     # Monitoring controllers
+│   ├── services/        # Metrics services
+│   └── interceptors/    # Metrics interceptor
+├── health/              # Health check module
+├── prisma/              # Database module
+├── common/              # Shared utilities
+│   ├── filters/         # Exception filters
+│   ├── interceptors/    # Global interceptors
+│   ├── middleware/      # Custom middleware
+│   └── services/        # Shared services
+└── main.ts              # Application entry point
+```
+
+## 🔧 Configuration
+
+### Database Configuration
+The application uses PostgreSQL with Prisma ORM. Configure your database connection in the `.env` file:
+
+```env
+DATABASE_URL="postgresql://username:password@host:port/database?schema=public"
+```
+
+### File Storage Configuration
+The application supports hybrid storage:
+
+1. **Supabase Storage** (Primary)
+2. **Local Storage** (Fallback)
+
+Configure Supabase in `.env`:
+```env
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_ANON_KEY="your-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+```
+
+### Security Configuration
+- JWT secrets should be strong and unique
+- Rate limiting is configured for API protection
+- CORS is enabled for specified origins
+- Helmet provides security headers
+
+## 📊 Monitoring Features
+
+### System Metrics
+- CPU and Memory usage
+- Process information
+- System uptime
+- Platform details
+
+### Database Metrics
+- Connection status
+- Table statistics
+- Query performance
+- Recent activity
+
+### Storage Metrics
+- Local storage usage
+- Supabase storage stats
+- File distribution
+- Storage health
+
+### API Metrics
+- Request/response times
+- Error rates
+- Endpoint statistics
+- Performance percentiles
+
+### Health Checks
+- Overall system health
+- Service availability
+- Resource usage alerts
+- Automatic issue detection
+
+## 🚨 Error Handling
+
+The application includes comprehensive error handling:
+
+- Global exception filters
+- Validation error handling
+- Security logging
+- Error response formatting
+- Alert system for critical issues
+
+## 🔒 Security Features
+
+- **Authentication**: JWT with refresh tokens
+- **Authorization**: Role-based access control
+- **Rate Limiting**: API request throttling
+- **Security Headers**: Helmet middleware
+- **Input Validation**: Class validator
+- **CORS**: Cross-origin resource sharing
+- **Password Security**: Argon2 hashing
+
+## 🧪 Testing
+
+```bash
+# Unit tests
 npm run test
+
+# E2E tests
 npm run test:e2e
+
+# Test coverage
+npm run test:cov
 ```
 
-### Docker Development
+## 📦 Deployment Options
 
-#### Quick Start (Development)
+### 1. Traditional Server
+- Ubuntu/CentOS server
+- PM2 process manager
+- Nginx reverse proxy
+- SSL with Let's Encrypt
 
+### 2. Docker Containers
+- Multi-stage builds
+- Production optimized
+- Health checks included
+- Volume persistence
+
+### 3. Cloud Platforms
+- Heroku ready
+- AWS/GCP compatible
+- Environment variables
+- Database connections
+
+## 🔧 Development Tools
+
+### Scripts
 ```bash
-# Start development environment
-npm run docker:dev
-
-# Stop development environment
-npm run docker:dev:down
+npm run start:dev      # Development server
+npm run start:debug    # Debug mode
+npm run build          # Production build
+npm run lint           # Code linting
+npm run format         # Code formatting
 ```
 
-#### Production Deployment
-
+### Docker Scripts
 ```bash
-# Start production environment
-npm run docker:prod
-
-# Stop production environment
-npm run docker:prod:down
+npm run docker:dev     # Development container
+npm run docker:prod    # Production container
+npm run docker:build   # Build images
 ```
 
-#### Manual Docker Commands
+## 📈 Performance Optimization
 
-```bash
-# Build Docker image
-npm run docker:build
+- **Database**: Optimized queries with Prisma
+- **Caching**: Redis integration ready
+- **File Processing**: Async image processing
+- **Compression**: Gzip compression enabled
+- **CDN**: Supabase Storage CDN
+- **Monitoring**: Real-time performance tracking
 
-# Development with hot reload
-docker-compose -f docker-compose.dev.yml up --build
+## 🤝 Contributing
 
-# Production deployment
-docker-compose up --build -d
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-# View logs
-docker-compose logs -f app
+## 📄 License
 
-# Access container shell
-docker-compose exec app sh
-```
+This project is licensed under the MIT License.
 
-### Docker Services
+## 🆘 Support
 
-- **API**: http://localhost:4000/api (production) or http://localhost:4001/api (development)
-- **PostgreSQL**: localhost:5432 (production) or localhost:5433 (development)
-- **Redis**: localhost:6379 (production) or localhost:6380 (development)
-- **Nginx**: http://localhost (production only)
+For support and questions:
+- Create an issue in the repository
+- Check the documentation
+- Review the Postman collection
+- Check the monitoring dashboard
+
+## 🔄 Updates & Maintenance
+
+- Regular security updates
+- Database migrations
+- Performance monitoring
+- Log rotation
+- Backup strategies
+
+---
+
+**Built with ❤️ using NestJS**
