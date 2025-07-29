@@ -21,6 +21,8 @@ export class ImageUploadService {
     userId: string,
     postId?: string,
   ): Promise<any> {
+    console.log('Upload params:', { userId, postId, hasFile: !!file });
+    
     // Validate file type
     if (!UPLOAD_CONFIG.ALLOWED_MIMETYPES.IMAGE.includes(file.mimetype)) {
       throw new BadRequestException('Invalid image file type');
@@ -30,6 +32,9 @@ export class ImageUploadService {
     if (file.size > UPLOAD_CONFIG.MAX_FILE_SIZE.IMAGE) {
       throw new BadRequestException('Image file too large');
     }
+
+    // Skip postId validation for now - allow any postId or null
+    // TODO: Add postId validation if needed
 
     try {
       // Generate unique filename
@@ -62,7 +67,7 @@ export class ImageUploadService {
           path: filePath,
           metadata,
           uploadedById: userId,
-          postId,
+          postId: postId || null, // Explicitly set to null if not provided
         },
       });
 

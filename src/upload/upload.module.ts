@@ -4,28 +4,19 @@ import { ImageUploadController } from './controllers/image-upload.controller';
 import { DocumentUploadController } from './controllers/document-upload.controller';
 import { ChunkUploadController } from './controllers/chunk-upload.controller';
 import { FileServeController } from './controllers/file-serve.controller';
+import { FileManagementController } from './controllers/file-management.controller';
 import { ImageUploadService } from './services/image-upload.service';
 import { DocumentUploadService } from './services/document-upload.service';
 import { ChunkUploadService } from './services/chunk-upload.service';
 import { FileProcessingService } from './services/file-processing.service';
 import { UPLOAD_CONFIG } from './config/upload.config';
-import { diskStorage } from 'multer';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { memoryStorage } from 'multer';
 
 @Module({
   imports: [
     MulterModule.register({
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          // This will be overridden by individual services
-          cb(null, UPLOAD_CONFIG.UPLOAD_PATHS.TEMP);
-        },
-        filename: (req, file, cb) => {
-          const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-          cb(null, uniqueName);
-        },
-      }),
+      // Use memory storage to get file.buffer
+      storage: memoryStorage(),
       limits: {
         fileSize: Math.max(...Object.values(UPLOAD_CONFIG.MAX_FILE_SIZE)),
       },
@@ -51,6 +42,7 @@ import { v4 as uuidv4 } from 'uuid';
     DocumentUploadController,
     ChunkUploadController,
     FileServeController,
+    FileManagementController,
   ],
   providers: [
     ImageUploadService,

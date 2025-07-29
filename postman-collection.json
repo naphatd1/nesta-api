@@ -931,6 +931,128 @@
       ]
     },
     {
+      "name": "File Management",
+      "item": [
+        {
+          "name": "Get My Files",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/my-files?type=IMAGE&status=COMPLETED&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["files", "my-files"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "IMAGE",
+                  "description": "Filter by file type (IMAGE, DOCUMENT, VIDEO, AUDIO, OTHER)"
+                },
+                {
+                  "key": "status",
+                  "value": "COMPLETED",
+                  "description": "Filter by status (UPLOADING, PROCESSING, COMPLETED, FAILED)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Files (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/all-files?type=IMAGE&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["files", "all-files"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "IMAGE",
+                  "description": "Filter by file type (IMAGE, DOCUMENT, VIDEO, AUDIO, OTHER)"
+                },
+                {
+                  "key": "status",
+                  "value": "COMPLETED",
+                  "description": "Filter by status (UPLOADING, PROCESSING, COMPLETED, FAILED)",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get File Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/stats",
+              "host": ["{{base_url}}"],
+              "path": ["files", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get File Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/{{file_id}}/details",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{file_id}}", "details"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "File Serving",
       "item": [
         {
