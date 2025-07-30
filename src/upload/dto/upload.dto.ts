@@ -1,15 +1,19 @@
 import { IsString, IsOptional, IsEnum, IsNumber, IsBoolean } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FileType } from '@prisma/client';
 
 export class UploadFileDto {
+  @ApiPropertyOptional({ example: 'uuid-string', description: 'Post ID to associate with the file' })
   @IsOptional()
   @IsString()
   postId?: string;
 
+  @ApiPropertyOptional({ example: 'Profile picture', description: 'File description' })
   @IsOptional()
   @IsString()
   description?: string;
 
+  @ApiPropertyOptional({ enum: FileType, description: 'File type' })
   @IsOptional()
   @IsEnum(FileType)
   type?: FileType;
@@ -63,14 +67,31 @@ export class CompleteUploadDto {
 }
 
 export class FileResponseDto {
+  @ApiProperty({ example: 'uuid-string', description: 'File ID' })
   id: string;
+
+  @ApiProperty({ example: 'image.jpg', description: 'Original filename' })
   originalName: string;
+
+  @ApiProperty({ example: 'processed-image.jpg', description: 'Processed filename' })
   filename: string;
+
+  @ApiProperty({ example: 'image/jpeg', description: 'File MIME type' })
   mimetype: string;
+
+  @ApiProperty({ example: 1024000, description: 'File size in bytes' })
   size: number;
+
+  @ApiProperty({ enum: FileType, description: 'File type' })
   type: FileType;
+
+  @ApiPropertyOptional({ example: 'https://example.com/file.jpg', description: 'File URL' })
   url?: string;
+
+  @ApiPropertyOptional({ example: 'https://example.com/thumbnail.jpg', description: 'Thumbnail URL' })
   thumbnail?: string;
+
+  @ApiProperty({ example: '2023-01-01T00:00:00.000Z', description: 'Creation date' })
   createdAt: Date;
 }
 

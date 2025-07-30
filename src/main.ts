@@ -1,5 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import helmet from "helmet";
 import * as compression from "compression";
@@ -36,8 +37,20 @@ async function bootstrap() {
       noSniff: true,
       xssFilter: true,
       referrerPolicy: { policy: "same-origin" },
+      hidePoweredBy: true, // Hide X-Powered-By header
     })
   );
+
+  // Hide additional server information
+  app.use((req: any, res: any, next: any) => {
+    res.removeHeader("X-Powered-By");
+    res.removeHeader("Server");
+    res.removeHeader("X-Powered-By");
+    res.removeHeader("X-AspNet-Version");
+    res.removeHeader("X-AspNetMvc-Version");
+    res.removeHeader("X-Frame-Options");
+    next();
+  });
 
   // Additional rate limiting for the entire app
   app.use(
@@ -94,9 +107,56 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix("api");
 
+  // Swagger configuration
+  const config = new DocumentBuilder()
+    .setTitle("NestJS Auth API")
+    .setDescription(
+      "API documentation for NestJS Authentication and Authorization system"
+    )
+    .setVersion("1.0")
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        name: "JWT",
+        description: "Enter JWT token",
+        in: "header",
+      },
+      "JWT-auth"
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  // Remove server info from OpenAPI spec
+  delete document.info["x-powered-by"];
+  if (document.servers) {
+    delete document.servers;
+  }
+
+  SwaggerModule.setup("api/docs", app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: false,
+      tryItOutEnabled: true,
+      showCommonExtensions: false,
+      showExtensions: false,
+    },
+    customSiteTitle: "API Documentation",
+    customCss: `
+      .swagger-ui .info .title small { display: none; }
+      .swagger-ui .info .title small.version-stamp { display: none; }
+      .swagger-ui .scheme-container { display: none; }
+      .swagger-ui .servers { display: none; }
+      .swagger-ui .info hgroup.main a { display: none; }
+    `,
+  });
+
   const port = process.env.PORT || 4000;
   await app.listen(port);
 
   console.log(`🚀 Application is running on: http://localhost:${port}/api`);
+  console.log(`📚 Swagger documentation: http://localhost:${port}/api/docs`);
 }
 bootstrap();
