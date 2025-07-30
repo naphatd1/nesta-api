@@ -11,6 +11,7 @@ import { PostsModule } from "./posts/posts.module";
 import { HealthModule } from "./health/health.module";
 import { UploadModule } from "./upload/upload.module";
 import { MonitoringModule } from "./monitoring/monitoring.module";
+import { CommonModule } from "./common/common.module";
 import { SecurityMiddleware } from "./common/middleware/security.middleware";
 import { SecurityLoggingInterceptor } from "./common/interceptors/security-logging.interceptor";
 import { ErrorResponseInterceptor } from "./common/interceptors/error-response.interceptor";
@@ -39,6 +40,7 @@ import { MetricsInterceptor } from "./monitoring/interceptors/metrics.intercepto
     HealthModule,
     UploadModule,
     MonitoringModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [

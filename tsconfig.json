@@ -18,5 +18,15 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
     "strict": false
-  }
+  },
+  "include": [
+    "src/**/*",
+    "config/**/*",
+    "database/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "frontend/**/*"
+  ]
 }

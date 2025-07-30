@@ -31,7 +31,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException("User with this email already exists");
+      throw new ConflictException("อีเมลนี้ถูกใช้งานแล้ว กรุณาลองใช้อีเมลอื่นหรือเข้าสู่ระบบหากคุณมีบัญชีอยู่แล้ว");
     }
 
     // Hash password with Argon2
@@ -72,15 +72,19 @@ export class AuthService {
       where: { email },
     });
 
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException("Invalid credentials");
+    if (!user) {
+      throw new UnauthorizedException("ไม่พบบัญชีผู้ใช้งานที่ตรงกับอีเมลนี้ กรุณาตรวจสอบอีเมลอีกครั้งหรือสมัครสมาชิกใหม่");
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException("บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบเพื่อขอความช่วยเหลือ");
     }
 
     // Verify password with Argon2
     const isPasswordValid = await argon2.verify(user.password, password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException("Invalid credentials");
+      throw new UnauthorizedException("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบรหัสผ่านและลองใหม่อีกครั้ง");
     }
 
     // Generate tokens
@@ -179,6 +183,15 @@ export class AuthService {
     return { message: "Logged out successfully" };
   }
 
+  async logoutAll(): Promise<{ message: string }> {
+    // Remove all refresh tokens from database (global logout)
+    await this.prisma.user.updateMany({
+      data: { refreshToken: null },
+    });
+
+    return { message: "All users logged out successfully" };
+  }
+
   private async generateTokens(userId: string, email: string, role: UserRole) {
     const payload = { sub: userId, email, role };
 
@@ -237,7 +250,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException("Admin with this email already exists");
+      throw new ConflictException("อีเมลนี้ถูกใช้งานแล้ว ไม่สามารถสร้างผู้ดูแลระบบได้");
     }
 
     const hashedPassword = await argon2.hash(password);

@@ -110,4 +110,23 @@ export class AuthController {
       createAdminDto.name,
     );
   }
+
+  @Post('logout-all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Logout all users (Admin only)' })
+  @ApiResponse({ status: 200, description: 'All users logged out successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
+  async logoutAll() {
+    return this.authService.logoutAll();
+  }
+
+  @Post('clear-sessions')
+  @ApiOperation({ summary: 'Clear all sessions (public endpoint for development)' })
+  @ApiResponse({ status: 200, description: 'All sessions cleared successfully' })
+  async clearSessions() {
+    return this.authService.logoutAll();
+  }
 }

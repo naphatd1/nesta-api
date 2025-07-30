@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import helmet from "helmet";
 import * as compression from "compression";
 import rateLimit from "express-rate-limit";
@@ -68,16 +69,30 @@ async function bootstrap() {
   );
 
   // CORS configuration
+  // app.enableCors({
+  //   origin: [
+  //     "http://localhost:3000",
+  //     "http://localhost:3001",
+  //     "http://localhost:5173", // Vite default
+  //   ],
+  //   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  //   allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  //   credentials: true,
+  // });
   app.enableCors({
     origin: [
       "http://localhost:3000",
+      "http://127.0.0.1:3000",
       "http://localhost:3001",
-      "http://localhost:5173", // Vite default
+      "http://localhost:5173",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     credentials: true,
   });
+
+  // Global exception filter
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Global validation pipe with custom error handling
   app.useGlobalPipes(
